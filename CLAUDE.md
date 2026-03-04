@@ -38,24 +38,40 @@ The AI agent helps product teams quickly understand how an industry measures suc
 Return results as JSON with the following structure:
 
 - industry (string)
-- kpis (array of objects containing: name, description, required_data, systems)
+- queried_at (UTC timestamp string)
+- kpis (array of objects containing: name, description, confidence, required_data, systems, source)
+  - confidence: "high" | "medium" | "low" — AI-evaluated for ai_generated KPIs, user-selected for user_submitted
+  - source: "ai_generated" | "user_submitted"
 
 ## Tech Stack
 
 - Python
 - Anthropic Claude API (claude-sonnet-4-6)
+- Streamlit (browser-based UI)
 - python-dotenv for environment variables
 
 ## Project Structure
 
-- `chatbot.py` — main chatbot script
+- `app.py` — Streamlit frontend (primary interface)
+- `chatbot.py` — terminal-based interface
+- `history.json` — local storage for query results (gitignored)
 - `.env` — API key (not committed to GitHub)
 - `venv/` — Python virtual environment
 
 ## Current Status
 
-- Basic chatbot is working
-- Next steps: Test the agent's responses and validate that returned KPIs and data mappings are accurate
+**Shipped:**
+- Industry KPI lookup returning structured JSON (5–8 KPIs per industry)
+- Confidence signal per KPI (AI-evaluated)
+- Source tagging (ai_generated / user_submitted)
+- Timestamp on all queries
+- Local persistence to history.json
+- Streamlit UI with collapsible KPI cards and raw JSON viewer
+- Custom KPI entry form with user-selected confidence
+
+**Not yet built:**
+- Team data sharing via Customer ID (PRD 5.4)
+- Database storage — currently using history.json flat file (PRD open question)
 
 ## Preferences
 

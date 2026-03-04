@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 import anthropic
 
@@ -17,8 +18,10 @@ Your response must be valid JSON with this exact structure:
     {
       "name": "<KPI name>",
       "description": "<what this KPI measures and why it matters>",
+      "confidence": "<high | medium | low>",
       "required_data": ["<data point 1>", "<data point 2>", "..."],
-      "systems": ["<system 1>", "<system 2>", "..."]
+      "systems": ["<system 1>", "<system 2>", "..."],
+      "source": "ai_generated"
     }
   ]
 }
@@ -27,6 +30,11 @@ Rules:
 - Return 5 to 8 of the most important KPIs for the industry
 - required_data: list the specific data fields or metrics needed to calculate the KPI
 - systems: list the software systems or data sources that typically store this data (e.g. CRM, ERP, billing system)
+- confidence: rate how universally recognized this KPI is in the industry
+  - high: universally tracked, appears in public benchmarks and analyst reports
+  - medium: commonly tracked but varies by company size or sub-sector
+  - low: emerging, niche, or inconsistently defined across the industry
+- source: always set to "ai_generated"
 - Respond ONLY with the JSON object — no explanation, no markdown code fences, just raw JSON
 """
 
@@ -46,10 +54,24 @@ def chat(user_message):
     return assistant_message
 
 
+def save_to_history(data: dict):
+    history_file = "history.json"
+    if os.path.exists(history_file):
+        with open(history_file, "r") as f:
+            history = json.load(f)
+    else:
+        history = []
+    history.append(data)
+    with open(history_file, "w") as f:
+        json.dump(history, f, indent=2)
+
+
 def display_response(raw_response):
     """Try to parse and pretty-print JSON. Fall back to plain text if it fails."""
     try:
         parsed = json.loads(raw_response)
+        parsed["queried_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        save_to_history(parsed)
         print(json.dumps(parsed, indent=2))
     except json.JSONDecodeError:
         # If Claude returned something that isn't valid JSON, print it as-is
