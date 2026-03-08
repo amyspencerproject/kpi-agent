@@ -17,6 +17,26 @@ Results are displayed in a browser-based UI, stored locally with a timestamp, an
 
 ---
 
+## Roadmap
+
+- [x] Industry KPI lookup with structured JSON output
+- [x] Confidence signal per KPI (AI-evaluated)
+- [x] Source tagging (ai_generated / user_submitted)
+- [x] Persistent KPI data storage with timestamps
+- [x] Custom KPI entry with user-selected confidence
+- [x] Streamlit browser-based UI
+- [ ] Team data sharing via Customer ID
+- [ ] Database storage (SQLite / Postgres)
+
+---
+
+## Documentation
+
+- [PRD.md](./PRD.md) — Full product requirements document
+
+
+---
+
 ## Why I Built This
 
 At a Series A SaaS company, our team struggled to quickly understand the data landscape of new industries we were targeting. We needed to know how each industry measured success before we could have meaningful sales conversations or define our ICP.
@@ -112,25 +132,6 @@ python chatbot.py
   ]
 }
 ```
-
----
-
-## Roadmap
-
-- [x] Industry KPI lookup with structured JSON output
-- [x] Confidence signal per KPI (AI-evaluated)
-- [x] Source tagging (ai_generated / user_submitted)
-- [x] Persistent KPI data storage with timestamps
-- [x] Custom KPI entry with user-selected confidence
-- [x] Streamlit browser-based UI
-- [ ] Team data sharing via Customer ID
-- [ ] Database storage (SQLite / Postgres)
-
----
-
-## Documentation
-
-- [PRD.md](./PRD.md) — Full product requirements document
 
 ---
 
