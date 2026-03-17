@@ -1,0 +1,20 @@
+# KPI Agent
+
+> An AI-powered research tool for Product Managers and Go-to-Market teams. 
+Input any industry and receive a structured list of KPIs that industry uses 
+to measure success, the operational data required to calculate each KPI, the 
+software systems that typically produce that data, and a confidence signal 
+on each result.
+
+Built to solve a real problem: GTM and PM teams entering new industries 
+spend hours on manual research before customer conversations. KPI Agent 
+turns that research into a single query.
+
+## Docs
+
+- [README](https://github.com/amyspencerproject/kpi-agent/blob/main/README.md): Project overview, setup instructions, and example output
+- [PRD](https://github.com/amyspencerproject/kpi-agent/blob/main/PRD.md): Full product requirements including features, output format, target users, and roadmap
+
+## Optional
+
+- [CLAUDE.md](https://github.com/amyspencerproject/kpi-agent/blob/main/CLAUDE.md): Project context for Claude Code development sessions
