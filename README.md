@@ -1,6 +1,14 @@
 # KPI Agent
 
-An AI-powered research tool that helps Product Managers and Go-to-Market teams understand how any industry measures success — and what data infrastructure supports those metrics.
+An AI-powered research tool that helps Product Managers and Go-to-Market teams understand how any industry measures success — built to solve a problem I ran into firsthand.
+
+---
+
+## The Problem
+
+At a Series A SaaS company, our GTM and PM teams were spending hours on manual research before every new vertical conversation. We needed to know how each industry measured success, what data those measurements required, and what software systems produced that data — before we could have a meaningful sales conversation or define our ICP.
+
+There was no fast way to get that answer. So I built one.
 
 ---
 
@@ -13,35 +21,27 @@ Input any industry, and KPI Agent returns:
 - The **software systems** that typically produce or store that data
 - A **confidence signal** on each KPI (high / medium / low)
 
-Results are displayed in a browser-based UI, stored locally with a timestamp, and can be supplemented with custom KPIs from your own knowledge.
+Results are stored in a database with a timestamp, and users can add custom KPIs from their own insider knowledge.
 
 ---
 
-## Roadmap
+## Why It's Built This Way
 
-- [x] Industry KPI lookup with structured JSON output
-- [x] Confidence signal per KPI (AI-evaluated)
-- [x] Source tagging (ai_generated / user_submitted)
-- [x] Persistent KPI data storage with timestamps
-- [x] Custom KPI entry with user-selected confidence
-- [x] Streamlit browser-based UI
-- [ ] Team data sharing via Customer ID
-- [ ] Database storage (SQLite / Postgres)
+A few product decisions worth noting:
 
----
-
-## Documentation
-
-- [PRD.md](./PRD.md) — Full product requirements document
-
+- **Structured JSON output** — results are returned as typed JSON so they can be rendered, stored, and eventually consumed by other tools (CRM enrichment, API access)
+- **Confidence signal per KPI** — not all KPIs are equally universal; the signal helps users know whether a metric is industry-standard or niche
+- **Custom KPI entry** — salespeople often learn proprietary metrics directly from customers; the tool captures that knowledge alongside AI-generated results
+- **Persistent storage** — results are timestamped and stored so accuracy can be tracked over time and teams don't duplicate queries
+- **Rate limiting** — public deployment is protected against abuse without requiring user accounts
 
 ---
 
-## Why I Built This
+## Try It
 
-At a Series A SaaS company, our team struggled to quickly understand the data landscape of new industries we were targeting. We needed to know how each industry measured success before we could have meaningful sales conversations or define our ICP.
+[Live app →](https://kpi-agent-ejvkkzxorahkqbjb5ez8xv.streamlit.app/)
 
-This agent solves that problem — turning hours of manual research into a single query.
+Password available on request.
 
 ---
 
@@ -50,7 +50,8 @@ This agent solves that problem — turning hours of manual research into a singl
 - **Python** — core application
 - **Anthropic Claude API** — AI agent (claude-sonnet-4-6)
 - **Streamlit** — browser-based UI
-- **python-dotenv** — environment variable management
+- **Supabase** — Postgres database for query storage and rate limiting
+- **Streamlit Community Cloud** — public deployment
 
 ---
 
@@ -60,78 +61,34 @@ This agent solves that problem — turning hours of manual research into a singl
 kpi-agent/
 ├── app.py           # Streamlit frontend (primary interface)
 ├── chatbot.py       # Terminal-based interface
-├── history.json     # Local query storage (gitignored)
+├── requirements.txt # Python dependencies
 ├── CLAUDE.md        # Project context for Claude Code
 ├── PRD.md           # Product Requirements Document
-├── .env             # API key (not committed to GitHub)
-├── .gitignore       # Ignores .env, venv, history.json, __pycache__
-└── venv/            # Python virtual environment
+├── RESEARCH.md      # User research log
+└── .env             # API key (not committed to GitHub)
 ```
 
 ---
 
-## Getting Started
+## Documentation
 
-### Prerequisites
-- Python 3.10+
-- An [Anthropic API key](https://console.anthropic.com)
-
-### Installation
-
-1. Clone the repo:
-```bash
-git clone https://github.com/YOUR_USERNAME/kpi-agent.git
-cd kpi-agent
-```
-
-2. Create and activate a virtual environment:
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-3. Install dependencies:
-```bash
-pip install anthropic streamlit python-dotenv
-```
-
-4. Create a `.env` file in the project root:
-```
-ANTHROPIC_API_KEY=your-api-key-here
-```
-
-5. Run the Streamlit app:
-```bash
-streamlit run app.py
-```
-
-Or use the terminal interface:
-```bash
-python chatbot.py
-```
+- [PRD.md](./PRD.md) — Full product requirements, feature decisions, and roadmap
+- [RESEARCH.md](./RESEARCH.md) — User research log from live testing
 
 ---
 
-## Example Output
+## Roadmap
 
-**Input:** `E-commerce`
-
-```json
-{
-  "industry": "E-commerce",
-  "queried_at": "2026-03-07 10:00:00 UTC",
-  "kpis": [
-    {
-      "name": "Customer Acquisition Cost (CAC)",
-      "description": "Total cost to acquire a new customer",
-      "confidence": "high",
-      "required_data": ["marketing spend", "new customers acquired"],
-      "systems": ["CRM", "ad platforms", "billing system"],
-      "source": "ai_generated"
-    }
-  ]
-}
-```
+- [x] Industry KPI lookup with structured JSON output
+- [x] Confidence signal per KPI (AI-evaluated)
+- [x] Source tagging (ai_generated / user_submitted)
+- [x] Persistent storage with timestamps (Supabase)
+- [x] Custom KPI entry with user-selected confidence
+- [x] Streamlit browser-based UI
+- [x] Public deployment with password protection and rate limiting
+- [ ] Team data sharing via Customer ID
+- [ ] Exportable reports (PDF, CSV)
+- [ ] API endpoint for programmatic access
 
 ---
 
