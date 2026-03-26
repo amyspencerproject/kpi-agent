@@ -1,4 +1,4 @@
-# KPI Agent
+# KPI First
 
 An AI-powered research tool that helps Product Managers and Go-to-Market teams understand how any industry measures success — built to solve a problem I ran into firsthand.
 
