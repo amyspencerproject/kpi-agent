@@ -106,7 +106,7 @@ def save_custom_kpi_to_supabase(industry: str, kpi: dict, session_id: str):
 def check_password():
     if st.session_state.get("authenticated"):
         return True
-    st.title("📊 KPI Agent")
+    st.title("📊 KPI First")
     st.markdown("Enter the access password to continue.")
     password = st.text_input("Password", type="password")
     if st.button("Enter"):
@@ -119,7 +119,7 @@ def check_password():
 
 
 # --- Page config ---
-st.set_page_config(page_title="KPI Agent", page_icon="📊", layout="centered")
+st.set_page_config(page_title="KPI First", page_icon="📊", layout="centered")
 
 if not check_password():
     st.stop()
@@ -128,7 +128,7 @@ session_id = get_session_id()
 query_count = get_query_count(session_id)
 queries_remaining = DAILY_LIMIT - query_count
 
-st.title("📊 KPI Agent")
+st.title("📊 KPI First")
 st.markdown("Enter an industry to see its key performance indicators and the data required to track them.")
 st.caption(f"Queries remaining today: {queries_remaining} / {DAILY_LIMIT}")
 

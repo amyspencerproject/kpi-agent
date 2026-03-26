@@ -1,6 +1,16 @@
 # Changelog
 
-All notable changes to KPI Agent are documented here.
+All notable changes to KPI First are documented here.
+
+---
+
+## [v0.4] — 2026-03-26
+### Dev/Prod Environment Separation
+
+**Added**
+- Separate Supabase project for local development to keep test queries out of production data
+- `.env` updated to point to dev Supabase instance locally; production Streamlit Cloud deployment unchanged
+- App renamed from "KPI Agent" to "KPI First"
 
 ---
 
