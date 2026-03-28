@@ -99,11 +99,13 @@ Users with the same Customer ID can access the same pool of stored KPI data. Thi
 
 ### 5.5 Data Quality Signal
 
-Each AI-generated KPI includes a confidence or quality signal to help users assess the reliability of the data. Confidence is determined by factors such as:
+Each AI-generated KPI includes a confidence or quality signal to help users assess the reliability of the data. Confidence scores are verified against live web sources via a second API call using Claude with web search enabled. For each KPI, the verifier searches for real-world evidence and assigns:
 
-- Consistency of the KPI across multiple AI responses
-- How commonly the KPI appears in public industry benchmarks
-- Recency of the data (timestamp-based decay signal)
+- **high** — strong evidence found in industry benchmarks, analyst reports, or widely cited sources
+- **medium** — some evidence found, but not universally standardized
+- **low** — little or no evidence found; emerging or poorly defined metric
+
+This replaces the prior approach of AI self-evaluation. User-submitted KPIs retain user-selected confidence (High / Medium / Low dropdown, defaults to Medium).
 
 ---
 
@@ -171,5 +173,5 @@ The following features are explicitly excluded from v1 to keep scope manageable:
 - How is Customer ID assigned and managed in v1 without a full auth system?
 
 **Resolved:**
-- ~~What is the confidence scoring methodology?~~ → AI-evaluated for `ai_generated` KPIs (Claude self-rates based on benchmark prevalence); user-selected for `user_submitted` KPIs (High / Medium / Low dropdown, defaults to Medium)
+- ~~What is the confidence scoring methodology?~~ → Web-search verified for `ai_generated` KPIs (a second Claude API call with web search enabled checks each KPI against live sources); user-selected for `user_submitted` KPIs (High / Medium / Low dropdown, defaults to Medium)
 - ~~Should user-submitted KPIs require any validation before being stored?~~ → KPI Name is required; all other fields are optional. No additional validation in v1.

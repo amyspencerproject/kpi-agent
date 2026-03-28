@@ -44,6 +44,26 @@ Rules:
 - Respond ONLY with the JSON object — no explanation, no markdown code fences, just raw JSON
 """
 
+VERIFY_PROMPT = """You are a KPI verification assistant. You have been given a list of KPIs for a specific industry.
+
+Your job is to verify each KPI by searching for evidence that it is a real, commonly tracked metric in that industry.
+
+For each KPI, search the web and assign a verified confidence score:
+- high: strong evidence found — appears in industry benchmarks, analyst reports, or widely cited sources
+- medium: some evidence found — mentioned in industry content but not universally standardized
+- low: little or no evidence found — rarely mentioned, emerging, or poorly defined
+
+Respond ONLY with a valid JSON array of objects in this exact structure, one per KPI:
+[
+  {
+    "name": "<exact KPI name as provided>",
+    "confidence": "<high | medium | low>"
+  }
+]
+
+No explanation, no markdown, just the raw JSON array.
+"""
+
 
 # --- Session ID ---
 def get_session_id():
@@ -71,6 +91,51 @@ def increment_query_count(session_id: str):
         supabase.table("rate_limits").insert({"session_id": session_id, "query_date": today, "query_count": 1}).execute()
 
 
+# --- Verification layer ---
+def verify_kpis(industry: str, kpis: list) -> list:
+    """
+    Makes a second Claude API call with web search enabled.
+    Returns the same KPI list with confidence scores updated based on web evidence.
+    Swappable: replace this function body with a Perplexity call in the future.
+    """
+    kpi_names = [kpi["name"] for kpi in kpis]
+    user_message = f"Industry: {industry}\n\nKPIs to verify:\n" + "\n".join(f"- {name}" for name in kpi_names)
+
+    try:
+        response = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=1024,
+            system=VERIFY_PROMPT,
+            tools=[{"type": "web_search_20260209", "name": "web_search"}],
+            messages=[{"role": "user", "content": user_message}]
+        )
+
+        # Extract the text block from the response (web search may add tool_use blocks)
+        verified_text = None
+        for block in response.content:
+            if block.type == "text":
+                verified_text = block.text
+                break
+
+        if not verified_text:
+            return kpis  # Fall back to original if no text returned
+
+        verified_list = json.loads(verified_text)
+
+        # Build a lookup map from the verified results
+        verified_map = {item["name"]: item["confidence"] for item in verified_list}
+
+        # Update confidence scores in the original KPI list
+        for kpi in kpis:
+            if kpi["name"] in verified_map:
+                kpi["confidence"] = verified_map[kpi["name"]]
+
+        return kpis
+
+    except Exception:
+        return kpis  # Always fall back gracefully — never break the main flow
+
+
 # --- KPI fetch ---
 def get_kpis(industry: str) -> dict:
     response = client.messages.create(
@@ -80,6 +145,10 @@ def get_kpis(industry: str) -> dict:
         messages=[{"role": "user", "content": industry}]
     )
     data = json.loads(response.content[0].text)
+
+    # Verify confidence scores against live web sources
+    data["kpis"] = verify_kpis(data["industry"], data["kpis"])
+
     data["queried_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     return data
 

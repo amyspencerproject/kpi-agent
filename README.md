@@ -80,7 +80,7 @@ kpi-agent/
 ## Roadmap
 
 - [x] Industry KPI lookup with structured JSON output
-- [x] Confidence signal per KPI (AI-evaluated)
+- [x] Confidence signal per KPI (verified against live web sources)
 - [x] Source tagging (ai_generated / user_submitted)
 - [x] Persistent storage with timestamps (Supabase)
 - [x] Custom KPI entry with user-selected confidence
