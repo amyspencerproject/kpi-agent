@@ -39,7 +39,7 @@ A few product decisions worth noting:
 
 ## Try It
 
-[Live app →](https://kpi-agent-ejvkkzxorahkqbjb5ez8xv.streamlit.app/)
+[Live app →](https://kpi-first-ejvkkzxorahkqbjb5ez8xv.streamlit.app/)
 
 Password available on request.
 

@@ -33,15 +33,15 @@ Each entry should capture:
 
 ### Session 1
 
-**Date:**
-**User type:**
-**Industries searched:**
+**Date:** March 2026
+**User type:** Technical / non-GTM
+**Industries searched:** 
 
-**What worked:**
+**What worked:** (not captured)
 
 **What didn't work:**
 
-**Quotes:**
+**Quotes:** "Where can I view KPIs I have already searched for?"
 
 **Follow-up:**
 
