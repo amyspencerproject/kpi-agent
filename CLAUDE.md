@@ -53,8 +53,6 @@ Return results as JSON with the following structure:
 ## Project Structure
 
 - `app.py` — Streamlit frontend (primary interface)
-- `chatbot.py` — terminal-based interface
-- `history.json` — local storage for query results (gitignored)
 - `.env` — API key (not committed to GitHub)
 - `venv/` — Python virtual environment
 
@@ -65,13 +63,12 @@ Return results as JSON with the following structure:
 - Confidence signal per KPI (AI-evaluated)
 - Source tagging (ai_generated / user_submitted)
 - Timestamp on all queries
-- Local persistence to history.json
+- Supabase (Postgres) for data persistence, with separate production and development databases
 - Streamlit UI with collapsible KPI cards and raw JSON viewer
 - Custom KPI entry form with user-selected confidence
 
 **Not yet built:**
 - Team data sharing via Customer ID (PRD 5.4)
-- Database storage — currently using history.json flat file (PRD open question)
 
 ## Preferences
 

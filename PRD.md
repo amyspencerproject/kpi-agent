@@ -2,10 +2,10 @@
 
 | Field   | Value      |
 | ------- | ---------- |
-| Version | 1.0        |
-| Status  | Draft      |
+| Version | 1.1        |
+| Status  | Active     |
 | Author  | Spencer    |
-| Date    | March 2026 |
+| Date    | April 2026 |
 | Product | KPI Agent  |
 
 ---
@@ -88,7 +88,7 @@ Users can manually add KPIs to any industry record. This is designed for insider
 - Required field: KPI Name
 - Optional fields: Description
 - Confidence is user-selected via dropdown (High / Medium / Low); defaults to Medium if not changed
-- Custom KPIs are appended to the most recent matching industry entry in `history.json`
+- Custom KPIs are appended to the most recent matching industry entry in Supabase
 - `source` is automatically set to `user_submitted`
 - `added_at` timestamp is recorded at time of submission
 - No validation beyond requiring a name; description, required_data, and systems are not required for user-submitted KPIs
@@ -106,6 +106,39 @@ Each AI-generated KPI includes a confidence or quality signal to help users asse
 - **low** — little or no evidence found; emerging or poorly defined metric
 
 This replaces the prior approach of AI self-evaluation. User-submitted KPIs retain user-selected confidence (High / Medium / Low dropdown, defaults to Medium).
+
+---
+
+## 5b. Features — v1.1
+
+Features planned for v1.1, based on findings from user research sessions conducted in April 2026.
+
+### 5b.1 Query Progress Indicator
+
+While the agent is processing a query, display real-time status messages showing each step of the process (e.g., generating KPIs, verifying confidence scores). This gives users visibility into what the agent is doing and increases trust in the results.
+
+- **Source:** Session 2 — PM users requested transparency into the query process
+- **User quote:** "Add some kind of user message when the agent is querying highlighting the steps the agent is taking. This would give the user more confidence in the query results."
+
+### 5b.2 Granular Confidence Scoring
+
+Replace or supplement the current three-tier confidence signal (high / medium / low) with a finer-grained ranking to help users better differentiate KPI reliability.
+
+- **Source:** Session 2 — PM users found the current three tiers insufficient
+- **Open question:** What scale? (e.g., numeric 1–10, five-tier, percentage)
+
+### 5b.3 Results Summary
+
+Display a brief narrative summary at the top of the KPI results page providing industry context before the KPI list. This orients users and provides a frame of reference for interpreting the results.
+
+- **Source:** Session 2 — PM users requested more context alongside the KPI list
+
+### 5b.4 Query History View
+
+Users have no clear way to find industries they have previously searched. Surface past queries in the UI so users can return to prior results without re-running a search.
+
+- **Source:** Session 1 — user asked "Where can I view KPIs I have already searched for?"
+- **Note:** Data is already stored in Supabase (per 5.2); this is a UI gap, not a data gap.
 
 ---
 
@@ -169,9 +202,9 @@ The following features are explicitly excluded from v1 to keep scope manageable:
 
 ## 10. Open Questions
 
-- What database will be used to store KPI data? (SQLite for v1 / Postgres later?)
 - How is Customer ID assigned and managed in v1 without a full auth system?
 
 **Resolved:**
+- ~~What database will be used to store KPI data?~~ → Supabase (Postgres). Separate databases for production and development environments.
 - ~~What is the confidence scoring methodology?~~ → Web-search verified for `ai_generated` KPIs (a second Claude API call with web search enabled checks each KPI against live sources); user-selected for `user_submitted` KPIs (High / Medium / Low dropdown, defaults to Medium)
 - ~~Should user-submitted KPIs require any validation before being stored?~~ → KPI Name is required; all other fields are optional. No additional validation in v1.

@@ -35,7 +35,7 @@ Each entry should capture:
 
 **Date:** March 2026
 **User type:** Technical / non-GTM
-**Industries searched:** 
+**Industries searched:**
 
 **What worked:** (not captured)
 
@@ -49,15 +49,15 @@ Each entry should capture:
 
 ### Session 2
 
-**Date:**
-**User type:**
-**Industries searched:**
+**Date:** April 23 2026
+**User type:**fellow product managers
+**Industries searched:** property manangement
 
 **What worked:**
 
 **What didn't work:**
 
-**Quotes:**
+**Quotes:**These are not exact quotes. Add some kind of user message when the agent is querying highlighting the steps the agent is taking. This would give the user more confidence in the query results. Add finer confidence level on the ranking on the KPIs. Add a summary to the list of results to provide more context.
 
 **Follow-up:**
 
