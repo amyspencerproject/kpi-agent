@@ -107,7 +107,8 @@ def verify_kpis(industry: str, kpis: list) -> list:
             max_tokens=1024,
             system=VERIFY_PROMPT,
             tools=[{"type": "web_search_20260209", "name": "web_search"}],
-            messages=[{"role": "user", "content": user_message}]
+            messages=[{"role": "user", "content": user_message}],
+            timeout=30.0
         )
 
         # Extract the text block from the response (web search may add tool_use blocks)
@@ -129,6 +130,7 @@ def verify_kpis(industry: str, kpis: list) -> list:
         for kpi in kpis:
             if kpi["name"] in verified_map:
                 kpi["confidence"] = verified_map[kpi["name"]]
+                kpi["web_verified"] = True
 
         return kpis
 
@@ -146,7 +148,9 @@ def get_kpis(industry: str) -> dict:
     )
     data = json.loads(response.content[0].text)
 
-    # Verify confidence scores against live web sources
+    for kpi in data["kpis"]:
+        kpi["web_verified"] = False
+
     data["kpis"] = verify_kpis(data["industry"], data["kpis"])
 
     data["queried_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -159,7 +163,8 @@ def save_to_supabase(data: dict, session_id: str):
         "industry": data["industry"],
         "queried_at": datetime.now(timezone.utc).isoformat(),
         "kpis": data["kpis"],
-        "session_id": session_id
+        "session_id": session_id,
+        "team_code": st.session_state.get("team_code")
     }).execute()
 
 
@@ -178,8 +183,18 @@ def check_password():
     st.title("📊 KPI First")
     st.markdown("Enter the access password to continue.")
     password = st.text_input("Password", type="password")
+    team_code_input = st.text_input("Team Code (optional)", placeholder="e.g. ACME-2026")
+    st.caption("Leave blank for personal use.")
     if st.button("Enter"):
         if password == APP_PASSWORD:
+            if team_code_input.strip():
+                result = supabase.table("teams").select("team_code").eq("team_code", team_code_input.strip().lower()).execute()
+                if not result.data:
+                    st.error("Team code not found. Leave blank for personal use.")
+                    return False
+                st.session_state["team_code"] = team_code_input.strip().lower()
+            else:
+                st.session_state["team_code"] = None
             st.session_state["authenticated"] = True
             st.rerun()
         else:
