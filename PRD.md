@@ -140,6 +140,11 @@ Users have no clear way to find industries they have previously searched. Surfac
 - **Source:** Session 1 — user asked "Where can I view KPIs I have already searched for?"
 - **Note:** Data is already stored in Supabase (per 5.2); this is a UI gap, not a data gap.
 
+**Implementation decisions (shipped):**
+- Sidebar displays past industries as clickable buttons, most recent first, capped at 20
+- If logged in with a team code, shows all queries for that team; otherwise shows current session only
+- Clicking an industry loads its stored KPI results into the main view without re-querying the API
+
 ---
 
 ## 6. Output Format

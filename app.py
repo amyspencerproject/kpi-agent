@@ -176,6 +176,17 @@ def save_custom_kpi_to_supabase(industry: str, kpi: dict, session_id: str):
         supabase.table("queries").update({"kpis": updated_kpis}).eq("id", row["id"]).execute()
 
 
+# --- Query history ---
+def load_query_history():
+    team_code = st.session_state.get("team_code")
+    session_id = get_session_id()
+    if team_code:
+        result = supabase.table("queries").select("id, industry, queried_at, kpis").eq("team_code", team_code).order("queried_at", desc=True).limit(20).execute()
+    else:
+        result = supabase.table("queries").select("id, industry, queried_at, kpis").eq("session_id", session_id).order("queried_at", desc=True).limit(20).execute()
+    return result.data
+
+
 # --- Password gate ---
 def check_password():
     if st.session_state.get("authenticated"):
@@ -210,6 +221,22 @@ if not check_password():
 
 session_id = get_session_id()
 query_count = get_query_count(session_id)
+
+# --- Sidebar history ---
+with st.sidebar:
+    st.header("Past Searches")
+    history = load_query_history()
+    if history:
+        for row in history:
+            if st.button(row["industry"], key=row["id"]):
+                st.session_state["kpi_data"] = {
+                    "industry": row["industry"],
+                    "queried_at": row["queried_at"],
+                    "kpis": row["kpis"]
+                }
+                st.rerun()
+    else:
+        st.caption("No past searches yet.")
 queries_remaining = DAILY_LIMIT - query_count
 
 st.title("📊 KPI First")

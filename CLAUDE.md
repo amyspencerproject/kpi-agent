@@ -60,18 +60,33 @@ Return results as JSON with the following structure:
 
 **Shipped:**
 - Industry KPI lookup returning structured JSON (5–8 KPIs per industry)
-- Confidence signal per KPI (AI-evaluated)
+- Confidence signal per KPI, web-verified via second Claude API call with web search
+- `web_verified` boolean on each KPI stored in Supabase
 - Source tagging (ai_generated / user_submitted)
 - Timestamp on all queries
 - Supabase (Postgres) for data persistence, with separate production and development databases
 - Streamlit UI with collapsible KPI cards and raw JSON viewer
 - Custom KPI entry form with user-selected confidence
+- Team data sharing via optional team code at login (validated against teams table in Supabase)
+- Rate limiting (10 queries/session/day) tracked in Supabase
+- Password protection on the app
 
-**Not yet built:**
-- Team data sharing via Customer ID (PRD 5.4)
+**Not yet built (v1.1):**
+- Query progress indicator (PRD 5b.1)
+- Granular confidence scoring (PRD 5b.2)
+- Results summary (PRD 5b.3)
+- Query history view (PRD 5b.4)
 
 ## Preferences
 
 - I am a beginner in Python
 - Explain changes clearly before making them
 - Warn me before using too many resources such as tokens
+
+## Standing Rules
+
+- **Explain before editing:** Always describe what a code change does in plain language before making it. Flag any trade-offs.
+- **Update CLAUDE.md when features ship:** Keep the Current Status section accurate after every significant change.
+- **Update PRD.md when features ship:** Move items from "Not yet built" to "Shipped" and update version/date as needed.
+- **Update memory files proactively:** After shipping features, deleting files, or making key decisions, update the memory files in `.claude/` without waiting to be asked.
+- **Present options for design decisions:** When a meaningful design choice comes up (data model, UX flow, auth approach), present 2-3 options with tradeoffs and wait for approval before building.
