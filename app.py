@@ -20,11 +20,13 @@ SYSTEM_PROMPT = """You are a KPI and business intelligence expert. When the user
 Your response must be valid JSON with this exact structure:
 {
   "industry": "<industry name>",
+  "summary": "<2-3 sentence overview of how this industry measures success and what drives its key metrics>",
   "kpis": [
     {
       "name": "<KPI name>",
       "description": "<what this KPI measures and why it matters>",
       "confidence": "<high | medium | low>",
+      "confidence_score": <integer 1-10>,
       "required_data": ["<data point 1>", "<data point 2>", "..."],
       "systems": ["<system 1>", "<system 2>", "..."],
       "source": "ai_generated"
@@ -40,6 +42,10 @@ Rules:
   - high: universally tracked, appears in public benchmarks and analyst reports
   - medium: commonly tracked but varies by company size or sub-sector
   - low: emerging, niche, or inconsistently defined across the industry
+- confidence_score: numeric version of confidence from 1 to 10
+  - 8-10: benchmark standard, universally tracked
+  - 5-7: commonly tracked but varies by company size or sub-sector
+  - 1-4: emerging, niche, or inconsistently defined
 - source: always set to "ai_generated"
 - Respond ONLY with the JSON object — no explanation, no markdown code fences, just raw JSON
 """
@@ -57,7 +63,8 @@ Respond ONLY with a valid JSON array of objects in this exact structure, one per
 [
   {
     "name": "<exact KPI name as provided>",
-    "confidence": "<high | medium | low>"
+    "confidence": "<high | medium | low>",
+    "confidence_score": <integer 1-10>
   }
 ]
 
@@ -123,13 +130,13 @@ def verify_kpis(industry: str, kpis: list) -> list:
 
         verified_list = json.loads(verified_text)
 
-        # Build a lookup map from the verified results
-        verified_map = {item["name"]: item["confidence"] for item in verified_list}
+        verified_map = {item["name"]: item for item in verified_list}
 
-        # Update confidence scores in the original KPI list
         for kpi in kpis:
             if kpi["name"] in verified_map:
-                kpi["confidence"] = verified_map[kpi["name"]]
+                kpi["confidence"] = verified_map[kpi["name"]]["confidence"]
+                if verified_map[kpi["name"]].get("confidence_score") is not None:
+                    kpi["confidence_score"] = verified_map[kpi["name"]]["confidence_score"]
                 kpi["web_verified"] = True
 
         return kpis
@@ -138,8 +145,8 @@ def verify_kpis(industry: str, kpis: list) -> list:
         return kpis  # Always fall back gracefully — never break the main flow
 
 
-# --- KPI fetch ---
-def get_kpis(industry: str) -> dict:
+# --- KPI generation ---
+def generate_kpis(industry: str) -> dict:
     response = client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=4096,
@@ -147,13 +154,8 @@ def get_kpis(industry: str) -> dict:
         messages=[{"role": "user", "content": industry}]
     )
     data = json.loads(response.content[0].text)
-
     for kpi in data["kpis"]:
         kpi["web_verified"] = False
-
-    data["kpis"] = verify_kpis(data["industry"], data["kpis"])
-
-    data["queried_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     return data
 
 
@@ -244,27 +246,37 @@ st.markdown("Enter an industry to see its key performance indicators and the dat
 st.caption(f"Queries remaining today: {queries_remaining} / {DAILY_LIMIT}")
 
 # --- Input ---
-industry = st.text_input("Industry", placeholder="e.g. E-commerce, Healthcare, SaaS")
-analyze = st.button("Analyze KPIs", type="primary", disabled=(queries_remaining <= 0))
-
 if queries_remaining <= 0:
     st.warning("You've reached your daily limit of 10 queries. Come back tomorrow!")
 
+with st.form("search_form", clear_on_submit=True):
+    industry = st.text_input("Industry", placeholder="e.g. E-commerce, Healthcare, SaaS")
+    analyze = st.form_submit_button("Analyze KPIs", type="primary", disabled=(queries_remaining <= 0))
+
 # --- Fetch and store results ---
 if analyze and industry.strip():
-    with st.spinner(f"Analyzing KPIs for **{industry}**..."):
-        try:
-            data = get_kpis(industry.strip())
+    try:
+        with st.status(f"Analyzing **{industry}**...", expanded=True) as status:
+            st.write("Generating KPIs...")
+            data = generate_kpis(industry.strip())
+
+            st.write("Verifying confidence scores with web search...")
+            data["kpis"] = verify_kpis(data["industry"], data["kpis"])
+
+            data["queried_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+            st.write("Saving results...")
             save_to_supabase(data, session_id)
             increment_query_count(session_id)
             st.session_state["kpi_data"] = data
-            st.rerun()
-        except json.JSONDecodeError:
-            st.error("The response wasn't valid JSON. Try again.")
-            st.stop()
-        except Exception as e:
-            st.error(f"Something went wrong: {e}")
-            st.stop()
+            status.update(label=f"Done! Found {len(data['kpis'])} KPIs for {industry}.", state="complete")
+        st.rerun()
+    except json.JSONDecodeError:
+        st.error("The response wasn't valid JSON. Try again.")
+        st.stop()
+    except Exception as e:
+        st.error(f"Something went wrong: {e}")
+        st.stop()
 
 elif analyze and not industry.strip():
     st.warning("Please enter an industry name first.")
@@ -277,12 +289,19 @@ if "kpi_data" in st.session_state:
     st.subheader(f"KPIs for {data.get('industry', '')}")
     st.caption(f"Queried: {data['queried_at']}")
 
-    for kpi in data.get("kpis", []):
+    if data.get("summary"):
+        st.markdown(data["summary"])
+
+    sorted_kpis = sorted(data.get("kpis", []), key=lambda k: k.get("confidence_score", 0), reverse=True)
+
+    for kpi in sorted_kpis:
         confidence = kpi.get("confidence", "medium").lower()
         icon = confidence_colors.get(confidence, "⚪")
+        score = kpi.get("confidence_score")
         with st.expander(f"{icon} {kpi['name']}"):
             col1, col2 = st.columns(2)
-            col1.markdown(f"**Confidence:** {icon} {confidence.capitalize()}")
+            score_display = f" · {score}/10" if score is not None else ""
+            col1.markdown(f"**Confidence:** {icon} {confidence.capitalize()}{score_display}")
             col2.markdown(f"**Source:** {kpi.get('source', 'ai_generated').replace('_', ' ').title()}")
             st.markdown(f"**Description**  \n{kpi.get('description', '')}")
 
