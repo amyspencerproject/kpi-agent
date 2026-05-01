@@ -71,11 +71,7 @@ Return results as JSON with the following structure:
 - Rate limiting (10 queries/session/day) tracked in Supabase
 - Password protection on the app
 
-**Not yet built (v1.1):**
-- Query progress indicator (PRD 5b.1)
-- Granular confidence scoring (PRD 5b.2)
-- Results summary (PRD 5b.3)
-- Query history view (PRD 5b.4)
+**All v1.1 features shipped. No outstanding PRD items.**
 
 ## Preferences
 
